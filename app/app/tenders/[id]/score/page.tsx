@@ -20,7 +20,7 @@ export default async function ScoringPage({ params }: { params: { id: string } }
   }
 
   const mandatoryReqs = (reqs||[]).filter(r=>r.is_mandatory);
-  const failingMandatory = mandatoryReqs.filter(r=>(r.weight||0)<0.5); // simulate fail
+  const failingMandatory = mandatoryReqs.filter(r=>(r.weight||0)<0.5);
 
   return (
     <div className="space-y-8">
@@ -44,6 +44,13 @@ export default async function ScoringPage({ params }: { params: { id: string } }
           </div>
         </section>
       )}
+      <section className="rounded-lg border border-blue-200 bg-blue-50">
+        <div className="border-b border-blue-200 px-5 py-4"><h2 className="font-semibold text-blue-900">Actions</h2></div>
+        <div className="p-5 text-sm">
+          <form action={`/app/tenders/${params.id}/score/run`} method="post"><button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white">Run scoring</button></form>
+          <p class="mt-2 text-gray-600 text-xs">Re‑run scoring to refresh score runs and exceptions.</p>
+        </div>
+      </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Score runs</h2></div>
         <div className="p-5 text-sm">

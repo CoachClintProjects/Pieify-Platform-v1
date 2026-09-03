@@ -9,7 +9,7 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
 
   const { data: docs } = await supabase.from('tender_documents').select('documents(filename, storage_path)').eq('bid_session_id', params.id);
   const { data: lines } = await supabase.from('tender_lines').select('id, line_number, description, quantity, unit_of_measure').eq('bid_session_id', params.id);
-  const { data: reqs } = await supabase.from('requirements').select('id, requirement_type, name, description, weight').eq('bid_session_id', params.id);
+  const { data: reqs } = await supabase.from('requirements').select('id, requirement_type, name, description, weight, is_mandatory').eq('bid_session_id', params.id);
 
   const workflowSteps = [
     { label: 'Extraction review', href: `/app/tenders/${params.id}/extract` },
@@ -45,7 +45,7 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
       </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Requirements</h2></div>
-        <div className="p-5 text-sm text-gray-600">{reqs?.length ? reqs.map(r => <div key={r.id} class="py-1"><span class="font-medium">{r.requirement_type}</span> — {r.name} (weight {r.weight})</div>) : <p>No requirements extracted.</p>}</div>
+        <div className="p-5 text-sm text-gray-600">{reqs?.length ? reqs.map(r => <div key={r.id} class="py-1"><span class="font-medium">{r.requirement_type}</span> — {r.name} (weight {r.weight}) {r.is_mandatory && <span class="text-red-600">(mandatory)</span>}</div>) : <p>No requirements extracted.</p>}</div>
       </section>
     </div>
   );

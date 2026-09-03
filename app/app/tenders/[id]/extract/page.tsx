@@ -7,7 +7,6 @@ export default async function ExtractionReviewPage({ params }: { params: { id: s
   const { data: bid } = await supabase.from('bid_sessions').select('*, verticals(name)').eq('id', params.id).single();
   if (!bid) notFound();
 
-  // Run extraction agent if no sections yet
   let { data: sections } = await supabase.from('tender_parse_sections').select('id, title, section_type, page_start, page_end, confidence').eq('bid_session_id', params.id).order('page_start');
   let { data: candidates } = await supabase.from('tender_parse_candidates').select('id, artifact_type, title, extracted_value, confidence, status').eq('bid_session_id', params.id);
   let { data: conflicts } = await supabase.from('tender_parse_conflicts').select('id, conflict_type, description, status').eq('bid_session_id', params.id);
@@ -37,6 +36,13 @@ export default async function ExtractionReviewPage({ params }: { params: { id: s
           <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Pricing advantage</p><p className="mt-2 text-2xl font-semibold">${valueSignals.pricingAdvantage.toLocaleString()}</p></div>
         </section>
       )}
+      <section className="rounded-lg border border-blue-200 bg-blue-50">
+        <div className="border-b border-blue-200 px-5 py-4"><h2 className="font-semibold text-blue-900">Actions</h2></div>
+        <div className="p-5 text-sm">
+          <form action={`/app/tenders/${params.id}/extract/run`} method="post"><button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white">Run extraction</button></form>
+          <p class="mt-2 text-gray-600 text-xs">Re‑run extraction to refresh sections, candidates, conflicts, and gaps.</p>
+        </div>
+      </section>
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-gray-200 bg-white"><div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Sections</h2></div><div className="p-5 text-sm">{sections?.length ? sections.map(s => <div key={s.id} className="py-1"><span className="font-medium">{s.title}</span> — {s.section_type || '—'} (p.{s.page_start}–{s.page_end}) <span className={s.confidence && s.confidence>0.8?'text-green-600':'text-amber-600'}>confidence {Math.round((s.confidence||0)*100)}%</span></div>) : <p class="text-gray-500">No sections extracted yet.</p>}</div></div>
         <div className="rounded-lg border border-gray-200 bg-white"><div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Candidates</h2></div><div className="p-5 text-sm">{candidates?.length ? candidates.map(c => <div key={c.id} className="py-1"><span class="font-medium">{c.artifact_type}</span> — {c.title} <span class="text-gray-400">confidence {Math.round((c.confidence||0)*100)}%</span> <span class={c.status==='accepted'?'text-green-600':c.status==='rejected'?'text-red-600':'text-gray-600'}>{c.status}</span></div>) : <p class="text-gray-500">No candidates.</p>}</div></div>

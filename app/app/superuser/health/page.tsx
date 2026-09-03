@@ -18,6 +18,9 @@ export default async function SuperuserHealthPage() {
   const planCounts: Record<string,number> = {};
   (subs||[]).forEach(s => { planCounts[s.plan] = (planCounts[s.plan]||0)+1; });
 
+  const conversionRate = (kpis?.active_subscriptions || 0) / Math.max(1, (kpis?.active_accounts || 1));
+  const avgMarginUplift = (kpis?.pricing_advantage_last_30d || 0) / Math.max(1, (kpis?.bids_last_30d || 1));
+
   return (
     <div className="space-y-8">
       <div><p className="text-sm font-medium text-blue-700">Superuser</p><h1 className="mt-1 text-3xl font-semibold text-gray-900">Business health & real‑time KPIs</h1><p className="mt-2 text-sm text-gray-600">All revenue vs all direct costs, plus adoption, value, and prototype progress.</p></div>
@@ -33,10 +36,18 @@ export default async function SuperuserHealthPage() {
         <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Time saved (30d)</p><p className="mt-2 text-2xl font-semibold">{kpis?.time_saved_minutes_last_30d || 0} min</p></div>
         <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Errors prevented (30d)</p><p className="mt-2 text-2xl font-semibold">{kpis?.errors_prevented_last_30d || 0}</p></div>
       </section>
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">AI cost (30d)</p><p className="mt-2 text-xl font-semibold">${aiCost30.toLocaleString()}</p></div>
         <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Infra cost (30d)</p><p className="mt-2 text-xl font-semibold">${infraCost30.toLocaleString()}</p></div>
         <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Pricing advantage (30d)</p><p className="mt-2 text-xl font-semibold">${kpis?.pricing_advantage_last_30d?.toLocaleString() || '0'}</p></div>
+        <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Conversion rate</p><p className="mt-2 text-xl font-semibold">{(conversionRate*100).toFixed(1)}%</p></div>
+      </section>
+      <section className="rounded-lg border border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Avg margin uplift per bid</h2></div>
+        <div className="p-5 text-sm">
+          <p class="text-2xl font-semibold">${Math.round(avgMarginUplift).toLocaleString()}</p>
+          <p class="text-gray-500 text-xs mt-1">Pricing advantage / bids (30d)</p>
+        </div>
       </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Plan mix</h2></div>
