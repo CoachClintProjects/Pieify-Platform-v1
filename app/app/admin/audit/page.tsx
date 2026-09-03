@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function AuditPage() {
+  const { data } = supabase ? await supabase.from("audit_events").select("id,event_type,action,entity_type,actor_user_id,account_id,occurred_at").order("occurred_at", { ascending: false }).limit(80) : { data: null };
+  return <><p className="muted">PLATFORM / AUDIT</p><h1>Audit events</h1><p className="muted">Who did what, when, and on which entity.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Event", "Action", "Entity", "Actor", "Account", "When"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.event_type}</td><td style={{ padding: 10 }}>{row.action}</td><td style={{ padding: 10 }}>{row.entity_type ?? "—"}</td><td style={{ padding: 10 }}>{row.actor_user_id ?? "—"}</td><td style={{ padding: 10 }}>{row.account_id ?? "—"}</td><td style={{ padding: 10 }}>{new Date(row.occurred_at).toLocaleString()}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={6} className="muted" style={{ padding: 20 }}>No audit events available.</td></tr>}</tbody></table></div></>;
+}

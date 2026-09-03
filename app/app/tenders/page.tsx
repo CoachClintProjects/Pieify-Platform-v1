@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function TendersPage() {
+  const { data } = supabase ? await supabase.from("bid_sessions").select("id,name,status,scoring_status,submission_deadline,issuer").order("updated_at", { ascending: false }).limit(50) : { data: null };
+  return <><p className="muted">PROCUREMENT / TENDERS</p><h1>Bid sessions</h1><p className="muted">The operating queue for tender intake, review, scoring, and response.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Tender", "Issuer", "Status", "Scoring", "Deadline"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.name}</td><td style={{ padding: 10 }}>{row.issuer ?? "—"}</td><td style={{ padding: 10 }}>{row.status}</td><td style={{ padding: 10 }}>{row.scoring_status}</td><td style={{ padding: 10 }}>{row.submission_deadline ? new Date(row.submission_deadline).toLocaleDateString() : "—"}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={5} className="muted" style={{ padding: 20 }}>No bid sessions available for this workspace.</td></tr>}</tbody></table></div></>;
+}

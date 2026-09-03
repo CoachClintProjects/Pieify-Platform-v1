@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function UsersPage() {
+  const { data } = supabase ? await supabase.from("profiles").select("id,email,first_name,last_name,role,is_active,created_at").order("created_at", { ascending: false }).limit(100) : { data: null };
+  return <><p className="muted">PLATFORM / USERS</p><h1>Users</h1><p className="muted">Directory of users and roles.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Email", "Name", "Role", "Active", "Created"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.email}</td><td style={{ padding: 10 }}>{[row.first_name, row.last_name].filter(Boolean).join(" ") || "—"}</td><td style={{ padding: 10 }}>{row.role}</td><td style={{ padding: 10 }}>{row.is_active ? "Yes" : "No"}</td><td style={{ padding: 10 }}>{new Date(row.created_at).toLocaleDateString()}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={5} className="muted" style={{ padding: 20 }}>No user records available.</td></tr>}</tbody></table></div></>;
+}

@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function QuotesPage() {
+  const { data } = supabase ? await supabase.from("quotes").select("id,quote_number,status,currency,total,gross_profit_pct,valid_until").order("updated_at", { ascending: false }).limit(50) : { data: null };
+  return <><p className="muted">COMMERCIAL / QUOTES</p><h1>Quotes</h1><p className="muted">Pricing, margin, validity, and offer readiness.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Quote", "Status", "Total", "Gross profit", "Valid until"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.quote_number}</td><td style={{ padding: 10 }}>{row.status}</td><td style={{ padding: 10 }}>{row.currency} {Number(row.total).toLocaleString()}</td><td style={{ padding: 10 }}>{row.gross_profit_pct == null ? "—" : `${row.gross_profit_pct}%`}</td><td style={{ padding: 10 }}>{row.valid_until ?? "—"}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={5} className="muted" style={{ padding: 20 }}>No quotes available.</td></tr>}</tbody></table></div></>;
+}

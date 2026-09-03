@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function SecurityPage() {
+  const { data } = supabase ? await supabase.from("license_integrity_events").select("id,event_type,severity,account_id,user_id,occurred_at").order("occurred_at", { ascending: false }).limit(80) : { data: null };
+  return <><p className="muted">PLATFORM / SECURITY</p><h1>Security & license events</h1><p className="muted">Integrity and licensing signals for the platform.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Event", "Severity", "Account", "User", "When"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.event_type}</td><td style={{ padding: 10 }}>{row.severity}</td><td style={{ padding: 10 }}>{row.account_id ?? "—"}</td><td style={{ padding: 10 }}>{row.user_id ?? "—"}</td><td style={{ padding: 10 }}>{new Date(row.occurred_at).toLocaleString()}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={5} className="muted" style={{ padding: 20 }}>No security events available.</td></tr>}</tbody></table></div></>;
+}

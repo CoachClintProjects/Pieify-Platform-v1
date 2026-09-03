@@ -21,6 +21,7 @@ Never add service-role keys or provider secrets to browser code or Git.
 
 ## Routes
 
+### Corporate
 - `/` corporate landing page (reads `corporate_site_content`)
 - `/demo` demo/sandbox entry
 - `/demo/request` demo request form
@@ -28,8 +29,24 @@ Never add service-role keys or provider secrets to browser code or Git.
 - `/api/demo` POST handler writing to `demo_requests`
 - `/api/health` database health check
 
+### App (HubSpot-style shell)
+- `/app` workspace overview
+- `/app/tenders` tender queue
+- `/app/inventory` inventory records
+- `/app/quotes` quote records
+- `/app/admin` superuser overview
+- `/app/admin/tenants` tenants/accounts
+- `/app/admin/users` users/profiles
+- `/app/admin/subscriptions` subscriptions/seats
+- `/app/admin/ai-runs` AI runs
+- `/app/admin/token-usage` token usage & cost
+- `/app/admin/cost-ledger` platform cost ledger
+- `/app/admin/audit` audit events
+- `/app/admin/security` security & license events
+
 ## Next steps
 
-- Wire authentication to the existing Supabase project.
-- Implement server-side authorization and role-aware UI.
-- Extend the demo flow to auto-provision a demo account and seed data.
+- Wire real authentication and session-based role.
+- Add server-side authorization guards for platform routes.
+- Extend detail drawers for each entity (tender, inventory item, quote, account, user, run).
+- Add filters, saved views, and inline actions to tables.

@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase";
+
+export default async function AIRunsPage() {
+  const { data } = supabase ? await supabase.from("ai_runs").select("id,account_id,run_type,model,status,started_at,completed_at").order("started_at", { ascending: false }).limit(80) : { data: null };
+  return <><p className="muted">PLATFORM / AI RUNS</p><h1>AI runs</h1><p className="muted">Model usage by account and run type.</p><div className="card" style={{ marginTop: 16, overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Account", "Run type", "Model", "Status", "Started", "Completed"].map((h) => <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #d9e2ec" }}>{h}</th>)}</tr></thead><tbody>{(data ?? []).map((row) => <tr key={row.id}><td style={{ padding: 10 }}>{row.account_id}</td><td style={{ padding: 10 }}>{row.run_type}</td><td style={{ padding: 10 }}>{row.model ?? "—"}</td><td style={{ padding: 10 }}>{row.status}</td><td style={{ padding: 10 }}>{row.started_at ? new Date(row.started_at).toLocaleString() : "—"}</td><td style={{ padding: 10 }}>{row.completed_at ? new Date(row.completed_at).toLocaleString() : "—"}</td></tr>)}{(!data || data.length === 0) && <tr><td colSpan={6} className="muted" style={{ padding: 20 }}>No AI run records available.</td></tr>}</tbody></table></div></>;
+}
