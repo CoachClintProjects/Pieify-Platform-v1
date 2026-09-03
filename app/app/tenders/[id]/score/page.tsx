@@ -1,17 +1,33 @@
 import { getServiceClient } from '../../../../lib/auth';
 import { notFound } from 'next/navigation';
+import { runScoringAgent } from '../../../../lib/ai_agents';
 
 export default async function ScoringPage({ params }: { params: { id: string } }) {
   const supabase = getServiceClient();
   const { data: bid } = await supabase.from('bid_sessions').select('*, verticals(name)').eq('id', params.id).single();
   if (!bid) notFound();
 
-  const { data: runs } = await supabase.from('score_runs').select('id, run_number, engine_version, percentage, final_score, recommendation, critical_fail, created_at').eq('bid_session_id', params.id).order('created_at', { ascending: false });
-  const { data: exceptions } = await supabase.from('scoring_exceptions').select('id, exception_type, severity, message, status').eq('bid_session_id', params.id);
+  let { data: runs } = await supabase.from('score_runs').select('id, run_number, engine_version, percentage, final_score, recommendation, critical_fail, created_at').eq('bid_session_id', params.id).order('created_at', { ascending: false });
+  let { data: exceptions } = await supabase.from('scoring_exceptions').select('id, exception_type, severity, message, status').eq('bid_session_id', params.id);
+  let valueSignals = { timeSaved: 0, errorsPrevented: 0, pricingAdvantage: 0 };
+
+  if (!runs?.length) {
+    const result = await runScoringAgent(params.id);
+    runs = [{ id: 'sim-1', run_number: 1, engine_version: 'v1.0', percentage: result.score, final_score: result.score, recommendation: result.recommendation, critical_fail: result.criticalFail, created_at: new Date().toISOString() }];
+    exceptions = result.exceptions.map((e,i) => ({ ...e, id: `sim-${i}` }));
+    valueSignals = { timeSaved: result.run.time_saved_minutes, errorsPrevented: result.run.errors_prevented, pricingAdvantage: Number(result.run.pricing_advantage_usd) };
+  }
 
   return (
     <div className="space-y-8">
-      <div><p className="text-sm font-medium text-blue-700">Bid workspace</p><h1 className="mt-1 text-3xl font-semibold text-gray-900">Scoring — {bid.name}</h1><p className="mt-2 text-sm text-gray-600">Deterministic scoring against rule sets with human override and audit.</p></div>
+      <div><p className="text-sm font-medium text-blue-700">Bid workspace</p><h1 className="mt-1 text-3xl font-semibold text-gray-900">Scoring — {bid.name}</h1><p className="mt-2 text-sm text-gray-600">Deterministic scoring with value signals: time saved, errors prevented, pricing advantage.</p></div>
+      {valueSignals.timeSaved > 0 && (
+        <section className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Time saved</p><p className="mt-2 text-2xl font-semibold">{valueSignals.timeSaved} min</p></div>
+          <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Errors prevented</p><p className="mt-2 text-2xl font-semibold">{valueSignals.errorsPrevented}</p></div>
+          <div className="rounded-lg border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Pricing advantage</p><p className="mt-2 text-2xl font-semibold">${valueSignals.pricingAdvantage.toLocaleString()}</p></div>
+        </section>
+      )}
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Score runs</h2></div>
         <div className="p-5 text-sm">
