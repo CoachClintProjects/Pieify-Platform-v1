@@ -1,14 +1,24 @@
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
+import { ReactNode } from 'react';
+import { getRoleContext } from '../../lib/auth';
+import { redirect } from 'next/navigation';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
 
-export default function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // TODO: replace with real role from session
-  const role: string | null = "superuser";
-  return <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "220px 1fr" }}>
-    <Sidebar role={role} />
-    <section>
-      <Header role={role} />
-      <main className="container" style={{ padding: "26px 0" }}>{children}</main>
-    </section>
-  </div>;
+export default async function AppLayout({ children }: { children: ReactNode }) {
+  const ctx = await getRoleContext();
+  if (!ctx) {
+    redirect('/');
+  }
+
+  return (
+    <div className="flex flex-col h-screen">
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto p-6 bg-white">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }

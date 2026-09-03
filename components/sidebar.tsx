@@ -1,39 +1,88 @@
-import Link from "next/link";
+'use client';
 
-const modules = [
-  ["Overview", "/app"],
-  ["Tenders", "/app/tenders"],
-  ["Inventory", "/app/inventory"],
-  ["Suppliers", "/app/suppliers"],
-  ["Customers", "/app/customers"],
-  ["Quotes", "/app/quotes"],
-  ["Contracts", "/app/contracts"],
-  ["Reports", "/app/reports"],
+import { useEffect, useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+interface NavItem {
+  label: string;
+  href: string;
+  roleRequired?: string[];
+}
+
+const commonItems: NavItem[] = [
+  { label: 'Dashboard', href: '/app' },
+  { label: 'Tenders', href: '/app/tenders' },
+  { label: 'Inventory', href: '/app/inventory' },
+  { label: 'Quotes', href: '/app/quotes' },
 ];
 
-const adminModules = [
-  ["Tenants", "/app/admin/tenants"],
-  ["Users", "/app/admin/users"],
-  ["Subscriptions", "/app/admin/subscriptions"],
-  ["AI runs", "/app/admin/ai-runs"],
-  ["Token usage", "/app/admin/token-usage"],
-  ["Cost ledger", "/app/admin/cost-ledger"],
-  ["Audit", "/app/admin/audit"],
-  ["Security", "/app/admin/security"],
+const adminItems: NavItem[] = [
+  { label: 'Platform Admin', href: '/app/admin', roleRequired: ['superuser', 'platform_admin'] },
 ];
 
-export function Sidebar({ role }: { role?: string | null }) {
-  const isPlatform = role === "superuser" || role === "platform_admin" || role === "platform_superuser";
-  return <aside style={{ width: 220, background: "#102a43", color: "white", padding: 14, display: "grid", gap: 6 }}>
-    <nav style={{ display: "grid", gap: 4 }}>
-      {modules.map(([label, href]) => <Link key={href} href={href} style={{ padding: "10px 12px", borderRadius: 8, color: "#d9e2ec" }}>{label}</Link>)}
-    </nav>
-    {isPlatform && <>
-      <div style={{ height: 1, background: "#243b53", margin: "8px 0" }} />
-      <div style={{ fontSize: 12, color: "#8aa0b8", padding: "6px 12px" }}>Platform</div>
-      <nav style={{ display: "grid", gap: 4 }}>
-        {adminModules.map(([label, href]) => <Link key={href} href={href} style={{ padding: "10px 12px", borderRadius: 8, color: "#f6ad55" }}>{label}</Link>)}
+export default function Sidebar() {
+  const [role, setRole] = useState<string | null>(null);
+  const pathname = usePathname();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function loadRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: membership } = await supabase
+        .from('memberships')
+        .select('roles(name)')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
+      setRole((membership?.roles as { name: string } | null)?.name || null);
+    }
+    loadRole();
+  }, [supabase]);
+
+  const visibleAdminItems = adminItems.filter(
+    (item) => !item.roleRequired || (role && item.roleRequired.includes(role))
+  );
+
+  return (
+    <aside className="w-64 border-r bg-gray-50 h-full overflow-y-auto">
+      <nav className="p-4 space-y-1">
+        {commonItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`block px-3 py-2 rounded text-sm ${
+              pathname === item.href
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+        {visibleAdminItems.length > 0 && (
+          <>
+            <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase">
+              Administration
+            </div>
+            {visibleAdminItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block px-3 py-2 rounded text-sm ${
+                  pathname?.startsWith(item.href)
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
-    </>}
-  </aside>;
+    </aside>
+  );
 }

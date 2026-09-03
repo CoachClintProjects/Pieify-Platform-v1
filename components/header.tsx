@@ -1,19 +1,67 @@
-import Link from "next/link";
+'use client';
 
-export function Header({ role }: { role?: string | null }) {
-  const isPlatform = role === "superuser" || role === "platform_admin" || role === "platform_superuser";
-  return <header style={{ height: 64, background: "white", borderBottom: "1px solid #d9e2ec", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-      <Link href="/" style={{ fontSize: 20, fontWeight: 900 }}>PIEFY<span style={{ color: "#f2994a" }}>.</span></Link>
-      <div style={{ width: 260, position: "relative" }}>
-        <input placeholder="Global search" style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #d9e2ec" }} />
+import { useEffect, useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
+
+export default function Header() {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function loadSession() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || null);
+        const { data: membership } = await supabase
+          .from('memberships')
+          .select('roles(name), accounts(name)')
+          .eq('user_id', user.id)
+          .limit(1)
+          .single();
+        if (membership) {
+          setRole((membership.roles as { name: string })?.name || null);
+          setAccountName((membership.accounts as { name: string } | null)?.name || null);
+        }
+      }
+    }
+    loadSession();
+  }, [supabase]);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push('/');
+  }
+
+  return (
+    <header className="flex items-center justify-between px-6 py-3 border-b bg-white">
+      <div className="flex items-center gap-4">
+        <div className="text-xl font-semibold text-gray-900">Pieify</div>
+        {accountName && (
+          <div className="text-sm text-gray-500">{accountName}</div>
+        )}
       </div>
-    </div>
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <Link href="/app" className="button button-secondary">Workspace</Link>
-      {isPlatform && <Link href="/app/admin" className="button button-primary">Platform admin</Link>}
-      <button className="button button-secondary">Notifications</button>
-      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#eaf2ff", display: "grid", placeItems: "center", fontWeight: 800 }}>U</div>
-    </div>
-  </header>;
+      <div className="flex items-center gap-4">
+        <div className="text-sm text-gray-600">
+          {userEmail ? (
+            <>
+              <span className="font-medium">{userEmail}</span>
+              {role && <span className="ml-2 text-gray-400">({role})</span>}
+            </>
+          ) : (
+            'Not signed in'
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Log out
+        </button>
+      </div>
+    </header>
+  );
 }
