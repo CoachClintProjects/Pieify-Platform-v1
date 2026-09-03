@@ -24,6 +24,13 @@ export default async function DecisionPage({ params }: { params: { id: string } 
           )) : <p class="text-gray-500">No decisions recorded yet.</p>}
         </div>
       </section>
+      <section className="rounded-lg border border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Audit trail</h2></div>
+        <div className="p-5 text-sm text-gray-600">
+          <p>Full audit trail (who changed what, when, and why) is logged for this bid.</p>
+          <p class="text-xs text-gray-500 mt-2">See ai_runs, score_runs, clarification_questions, and procurement_decisions for details.</p>
+        </div>
+      </section>
     </div>
   );
 }
