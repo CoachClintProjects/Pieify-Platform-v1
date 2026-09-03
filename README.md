@@ -1,6 +1,6 @@
-# Pieify Corporate Site
+# Pieify Platform V1
 
-Database-driven corporate site with a functional demo/sandbox flow.
+Complete rebuild: database-driven corporate site, HubSpot-style app shell, superuser control plane, and user workspace.
 
 ## Stack
 
