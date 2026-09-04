@@ -27,23 +27,26 @@ export default async function PricingPage({ params }: { params: { id: string } }
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Scenario modeling</h2></div>
         <div className="p-5 text-sm">
-          <p class="font-medium text-gray-900">3% discount scenario</p>
-          <p class="text-gray-700">Price: ${Math.round(scenarioPrice).toLocaleString()} — Margin: {Math.round(scenarioMarginPct*100)}%</p>
-          <p class="text-gray-500 text-xs">Adjust discount, freight, warranty, commission to see margin impact.</p>
+          <p className="font-medium text-gray-900">3% discount scenario</p>
+          <p className="text-gray-700">Price: ${Math.round(scenarioPrice).toLocaleString()} — Margin: {Math.round(scenarioMarginPct*100)}%</p>
+          <p className="text-gray-500 text-xs">Adjust discount, freight, warranty, commission to see margin impact.</p>
         </div>
       </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Quotes</h2></div>
         <div className="p-5 text-sm">
           {quotes?.length ? quotes.map(q => (
-            <div key={q.id} class="py-1"><a class="text-blue-600 underline" href={`/app/quotes/${q.id}`}>{q.quote_number}</a> — {q.status} — {q.currency} {Number(q.total).toLocaleString()} {q.valid_until && <span class="text-gray-400">(valid until {new Date(q.valid_until).toLocaleDateString()})</span></div>
-          )) : <p class="text-gray-500">No quotes yet.</p>}
+            <div key={q.id} className="py-1">
+              <a className="text-blue-600 underline" href={`/app/quotes/${q.id}`}>{q.quote_number}</a> — {q.status} — {q.currency} {Number(q.total).toLocaleString()}
+              {q.valid_until && <span className="text-gray-400"> (valid until {new Date(q.valid_until).toLocaleDateString()})</span>}
+            </div>
+          )) : <p className="text-gray-500">No quotes yet.</p>}
         </div>
       </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Cost items</h2></div>
         <div className="p-5 text-sm">
-          {costItems?.length ? costItems.map(c => <div key={c.id} class="py-1"><span class="font-medium">{c.category}</span> — {c.description} — {c.quantity} × {c.currency} {Number(c.unit_cost).toLocaleString()}</div>) : <p class="text-gray-500">No cost items.</p>}
+          {costItems?.length ? costItems.map(c => <div key={c.id} className="py-1"><span className="font-medium">{c.category}</span> — {c.description} — {c.quantity} × {c.currency} {Number(c.unit_cost).toLocaleString()}</div>) : <p className="text-gray-500">No cost items.</p>}
         </div>
       </section>
     </div>

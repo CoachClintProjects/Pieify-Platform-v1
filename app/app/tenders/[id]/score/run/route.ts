@@ -1,6 +1,6 @@
-import { getServiceClient } from '../../../../lib/auth';
 import { NextResponse } from 'next/server';
-import { runScoringAgent } from '../../../../lib/ai_agents';
+import { getServiceClient } from '../../../../../lib/auth';
+import { runScoringAgent } from '../../../../../lib/ai_agents';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const supabase = getServiceClient();

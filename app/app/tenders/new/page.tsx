@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 
 export default function NewTenderPage() {
@@ -8,17 +7,19 @@ export default function NewTenderPage() {
   const [issuer, setIssuer] = useState('');
   const [verticalId, setVerticalId] = useState('');
   const [loading, setLoading] = useState(false);
-  const supabase = createClientComponentClient();
   const router = useRouter();
 
   async function createSession() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('Not signed in');
-    const { data, error } = await supabase.from('bid_sessions').insert({ name, issuer, vertical_id: verticalId || null, created_by: user.id, status: 'draft' }).select().single();
+    const res = await fetch('/api/bid-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, issuer, vertical_id: verticalId || null }),
+    });
     setLoading(false);
-    if (!error && data) router.push(`/app/tenders/${data.id}`);
-    else alert(error?.message || 'Failed to create bid session');
+    const data = await res.json();
+    if (res.ok && data.id) router.push(`/app/tenders/${data.id}`);
+    else alert(data.error || 'Failed to create bid session');
   }
 
   return (
