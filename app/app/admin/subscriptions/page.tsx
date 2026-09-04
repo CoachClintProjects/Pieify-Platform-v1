@@ -1,10 +1,11 @@
-import { getServiceClient } from '../../../../lib/auth';
-import { formatDate } from '../../../../lib/admin-data';
+import { getServiceClient } from '../../../lib/auth';
+import { formatDate } from '../../../lib/admin-data';
+
+type Row = Record<string, any>;
 
 export default async function SubscriptionsPage() {
-  const supabase = getServiceClient();
-  const { data, error } = await supabase.from('subscriptions').select('id, account_id, plan, status, current_period_start, current_period_end, created_at').order('created_at', { ascending: false });
-  const { data: accounts } = await supabase.from('accounts').select('id, name');
-  const accountNames = new Map((accounts || []).map((account) => [account.id, account.name]));
-  return <div className="space-y-6"><div><p className="text-sm font-medium text-blue-700">Revenue operations</p><h1 className="mt-1 text-3xl font-semibold text-gray-900">Subscriptions</h1><p className="mt-2 text-sm text-gray-600">Live records from <code>subscriptions</code>.</p></div>{error ? <p className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">Unable to load subscriptions: {error.message}</p> : <div className="overflow-hidden rounded-lg border border-gray-200 bg-white"><table className="min-w-full divide-y divide-gray-200 text-sm"><thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-3">Tenant</th><th className="px-5 py-3">Plan</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Current period</th><th className="px-5 py-3">Created</th></tr></thead><tbody className="divide-y divide-gray-100">{(data || []).map((row) => <tr key={row.id}><td className="px-5 py-4 font-medium text-gray-900">{accountNames.get(row.account_id) || row.account_id}</td><td className="px-5 py-4 text-gray-600">{row.plan}</td><td className="px-5 py-4 text-gray-600">{row.status}</td><td className="px-5 py-4 text-gray-600">{formatDate(row.current_period_start)} – {formatDate(row.current_period_end)}</td><td className="px-5 py-4 text-gray-600">{formatDate(row.created_at)}</td></tr>)}{!data?.length && <tr><td colSpan={5} className="px-5 py-10 text-center text-gray-500">No subscription records available.</td></tr>}</tbody></table></div>}</div>;
+  const db = getServiceClient();
+  const { data } = await db.from('subscriptions').select('*').order('created_at', { ascending: false }).limit(200);
+  const rows: Row[] = data || [];
+  return <div className="space-y-8"><div><p className="text-sm font-medium text-blue-700">Admin</p><h1 className="mt-1 text-3xl font-semibold text-gray-900">Subscriptions</h1></div><section className="rounded-lg border border-gray-200 bg-white"><div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Subscriptions</h2></div><div className="overflow-x-auto"><table className="min-w-full text-sm"><thead><tr className="text-left text-gray-600"><th className="px-5 py-3">ID</th><th className="px-5 py-3">Account</th><th className="px-5 py-3">Plan</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Period</th><th className="px-5 py-3">Created</th></tr></thead><tbody>{rows.map((r: Row) => <tr key={r.id} className="border-t"><td className="px-5 py-3">{r.id}</td><td className="px-5 py-3">{r.account_id}</td><td className="px-5 py-3">{r.plan}</td><td className="px-5 py-3">{r.status}</td><td className="px-5 py-3">{formatDate(r.current_period_start)} → {formatDate(r.current_period_end)}</td><td className="px-5 py-3">{formatDate(r.created_at)}</td></tr>)}</tbody></table></div></section></div>;
 }
