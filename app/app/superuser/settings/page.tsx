@@ -1,0 +1,6 @@
+import { getServiceClient } from '../../../lib/auth';
+export const dynamic='force-dynamic';
+export default async function Settings(){
+ const db=await getServiceClient(); const {data,error}=await db.from('platform_settings').select('*').order('key').limit(100);
+ return <div><div className="hs-breadcrumb">Platform Home / Settings</div><h1 className="hs-page-title">Platform settings</h1><p className="hs-page-sub">Owner/operator configuration. Values are shown from production configuration; nothing is invented.</p><div className="mt-5 rounded-lg border border-gray-200 bg-white">{error?<div className="p-6 text-sm"><b>Not configured:</b> {error.message}</div>:!data?.length?<div className="p-8 text-sm text-gray-500">No platform settings are configured in production.</div>:<div className="divide-y divide-gray-100">{data.map((x:any)=><div key={x.id||x.key} className="grid gap-2 px-5 py-4 md:grid-cols-[240px_1fr_auto]"><b className="text-sm">{x.key}</b><span className="text-sm break-words">{typeof x.value==='object'?JSON.stringify(x.value):String(x.value??'—')}</span><span className="text-xs text-gray-500">{x.updated_at?new Date(x.updated_at).toLocaleString():'—'}</span></div>)}</div>}</div></div>
+}
