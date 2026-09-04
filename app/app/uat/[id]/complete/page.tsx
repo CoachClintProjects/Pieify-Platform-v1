@@ -1,4 +1,4 @@
-import { getServiceClient } from '../../../lib/auth';
+import { getServiceClient } from '../../../../lib/auth';
 import { notFound } from 'next/navigation';
 
 export default async function CompleteUATPage({ params }: { params: { id: string } }) {

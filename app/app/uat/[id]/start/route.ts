@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServiceClient } from '../../../lib/auth';
+import { getServiceClient } from '../../../../lib/auth';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const supabase = getServiceClient();
