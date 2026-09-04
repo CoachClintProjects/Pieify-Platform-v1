@@ -1,20 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
-export function getServiceClient() {
+export function getServiceClient(): any {
   const cookieStore = cookies();
-  const cookie = cookieStore.get('supabase-auth-token');
-  const token = cookie?.value ? JSON.parse(cookie.value) : null;
-
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        headers: token?.access_token ? { Authorization: `Bearer ${token.access_token}` } : {},
-      },
-    }
-  );
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  ) as any;
 }
 
 export async function requireRole(requiredRole: 'superuser' | 'admin' | 'user') {
