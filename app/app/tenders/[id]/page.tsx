@@ -10,6 +10,7 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
   const { data: docs } = await supabase.from('tender_documents').select('documents(filename, storage_path)').eq('bid_session_id', params.id);
   const { data: lines } = await supabase.from('tender_lines').select('id, line_number, description, quantity, unit_of_measure').eq('bid_session_id', params.id);
   const { data: reqs } = await supabase.from('requirements').select('id, requirement_type, name, description, weight, is_mandatory').eq('bid_session_id', params.id);
+  const { data: fireSpecs } = await supabase.from('fire_tender_specs').select('pump_gpm, tank_capacity_gallons, foam_system, ulb_compliance, nfpa_standard, cold_weather_package').eq('bid_session_id', params.id).single();
 
   const workflowSteps = [
     { label: 'Extraction review', href: `/app/tenders/${params.id}/extract` },
@@ -35,9 +36,42 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
           </ol>
         </div>
       </section>
+      {fireSpecs && (
+        <section className="rounded-lg border border-blue-200 bg-blue-50">
+          <div className="border-b border-blue-200 px-5 py-4"><h2 className="font-semibold text-blue-900">Fire apparatus specs</h2></div>
+          <div className="p-5 text-sm text-gray-700">
+            <p>Pump: {fireSpecs.pump_gpm || '—'} GPM</p>
+            <p>Tank: {fireSpecs.tank_capacity_gallons || '—'} gallons</p>
+            <p>Foam: {fireSpecs.foam_system ? 'Yes' : 'No'}</p>
+            <p>ULB: {fireSpecs.ulb_compliance ? 'Compliant' : 'Not compliant'}</p>
+            <p>NFPA: {fireSpecs.nfpa_standard || '—'}</p>
+            <p>Cold weather: {fireSpecs.cold_weather_package ? 'Yes' : 'No'}</p>
+          </div>
+        </section>
+      )}
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Documents</h2></div>
-        <div className="p-5 text-sm text-gray-600">{(docs || []).length ? (docs as any[]).map(d => <div key={d.documents.filename} class="py-1">{d.documents.filename}</div>) : <p>No documents attached.</p>}</div>
+        <div className="p-5">
+          <form
+            action={async (fd) => {
+              'use server';
+              const supabase = getServiceClient();
+              const file = fd.get('file') as File;
+              if (!file || file.size === 0) return;
+              const { data: { user } } = await supabase.auth.getUser();
+              const { data: upload } = await supabase.storage.from('tenders').upload(`${params.id}/${file.name}`, file, { upsert: true });
+              if (upload?.path) {
+                await supabase.from('tender_documents').insert({ bid_session_id: params.id, document_id: upload.path });
+                await supabase.from('documents').upsert({ id: upload.path, filename: file.name, storage_path: upload.path });
+              }
+            }}
+            className="flex items-center gap-3"
+          >
+            <input name="file" type="file" className="text-sm" accept=".pdf" required />
+            <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white">Upload PDF</button>
+          </form>
+          <div className="mt-4 text-sm text-gray-600">{(docs || []).length ? (docs as any[]).map(d => <div key={d.documents.filename} class="py-1">{d.documents.filename}</div>) : <p>No documents attached.</p>}</div>
+        </div>
       </section>
       <section className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4"><h2 className="font-semibold text-gray-900">Lines</h2></div>
