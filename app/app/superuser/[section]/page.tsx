@@ -42,7 +42,7 @@ export default async function SuperuserObjectIndex({ params }: { params: Promise
   const config = configs[section];
   if (!config) return <div><h1 className="hs-page-title">Not configured</h1><p className="hs-page-sub">The requested platform object is not configured.</p></div>;
 
-  const db = getServiceClient();
+  const db = await getServiceClient();
   const { data, error, count } = await db.from(config.table).select('*', { count: 'exact' }).limit(50);
   const rows = (data || []) as Record<string, unknown>[];
   const keys = rows.length ? config.columns.filter(k => k in rows[0]) : config.columns;
