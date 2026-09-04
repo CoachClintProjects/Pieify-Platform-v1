@@ -1,17 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export function getServiceClient(): any {
-  const cookieStore = cookies();
-  return createClient(
+export async function getServiceClient() {
+  const cookieStore = await cookies();
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
-  ) as any;
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
+        },
+      },
+    }
+  );
 }
 
 export async function requireRole(requiredRole: 'superuser' | 'admin' | 'user') {
-  const supabase = getServiceClient();
+  const supabase = await getServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
   const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
