@@ -14,7 +14,7 @@ async function count(db: any, table: string, filter?: (q: any) => any) {
 }
 
 export default async function SuperuserHome() {
-  const db = getServiceClient();
+  const db = await getServiceClient();
   const [organizations, users, tenders, inventory, demos, aiRuns, toolCalls, workflows, syncRuns, audit, usage, cost, exceptions, tickets] = await Promise.all([
     count(db,'accounts'), count(db,'profiles'), count(db,'bid_sessions'), count(db,'inventory_items'), count(db,'demo_requests'), count(db,'ai_runs'), count(db,'ai_tool_calls'), count(db,'document_workflows'), count(db,'integration_sync_runs'), count(db,'audit_events'), count(db,'ai_run_usage'), count(db,'platform_cost_ledger'), count(db,'exception_queue_items'), count(db,'support_tickets', q => q.not('status','in',['closed','resolved']))
   ]);
